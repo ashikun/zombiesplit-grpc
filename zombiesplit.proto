@@ -92,11 +92,24 @@ message DumpResponse {
       string game_name = 3;     // Full name for the game.
       string category_name = 4; // Full name for the category.
     }
-    // Information about a split marker.
+
+    // Information about a split in a run attempt.
+    //
+    // Part of this is metadata about the split from the database - its
+    // identifier, its 'formal' name (eg, how one would refer to it in splits.io
+    // and ILs), and its nickname (a separate name added to the split for
+    // comedic or cathartic purposes).  For instance, we might have:
+    //
+    // - sid      = "CC2"
+    // - name     = "Collision Chaos 2"
+    // - nickname = "'U's of Doom"
+    //
+    // The other part of the Split is the times for the current attempt.
     message Split {
-      string sid = 1;            // Short identifier for the split.
-      string name = 2;           // Full name for the split.
-      repeated uint32 times = 3; // Times for the split.
+      string sid = 1;               // Short identifier for the split.
+      string name = 2;              // Full formal name for the split.
+      optional string nickname = 3; // Nickname for the split, if different from `name`.
+      repeated uint32 times = 4;    // Times for the split.
     }
 
     GameCategory game_category = 1; // Game/category information.
