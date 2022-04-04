@@ -274,13 +274,23 @@ message AttemptInfo {
 }
 
 // A pace note.
+//
+// This enumeration captures all of the various relationships between an
+// attempt time and a comparison time.
+//
+// For splits, all of the values of Pace are relevant.
+//
+// For totals, the only relevant values are NONE, BEHIND, AHEAD, and
+// PERSONAL_BEST.
+//
+// Future versions of the protocol may split PERSONAL_BEST out of this enum.
 enum Pace {
   NONE = 0;               // Pacing information not available.
   BEHIND = 1;             // Behind comparison.
   BEHIND_BUT_GAINING = 2; // Behind comparison but making up time.
   AHEAD_BUT_LOSING = 3;   // Ahead of comparison but losing time.
   AHEAD = 4;              // Ahead of comparison.
-  PERSONAL_BEST = 5;      // Split PB.
+  PERSONAL_BEST = 5;      // A new personal best (implicitly ahead).
 }
 
 // Types of pop modification.
