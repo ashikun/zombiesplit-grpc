@@ -32,7 +32,7 @@ service Zombiesplit {
   rpc Observe(ObserveRequest) returns (stream Event) {}
 
   /*
-   * Commands
+   * Attempt commands
    */
 
   // Starts a new attempt in the current session.
@@ -45,9 +45,9 @@ service Zombiesplit {
   rpc Pop(PopRequest) returns (PopResponse) {}
 }
 
-//
-// Server info
-//
+/*
+ * Server info
+ */
 
 // A server info request.
 message ServerInfoRequest {
@@ -57,7 +57,10 @@ message ServerInfoRequest {
 
 // A server info response.
 message ServerInfoResponse {
-  // Server semantic version.
+  // Server protocol (not software) semantic version.
+  //
+  // See the comment at the top of the protobuf description for an indication
+  // of the semantic version of the described protocol.
   message Version {
     uint64 major = 1; // Major version number.
     uint64 minor = 2; // Minor version number.
@@ -65,12 +68,12 @@ message ServerInfoResponse {
   }
 
   string ident = 1;    // The name of the server software.
-  Version version = 2; // The version of the server.
+  Version version = 2; // The version of the server protocol.
 }
 
-//
-// Dump
-//
+/*
+ * Dump
+ */
 
 // A dump request.
 message DumpRequest {
@@ -105,17 +108,18 @@ message DumpResponse {
   message Comparison {
     // Split comparison message.
     message Split {
-      /// The personal best for this split, if any.
-      ///
-      /// Any splits that compare quicker than this time get the `PersonalBest`
-      /// pace.
+      // The personal best for this split, if any.
+      //
+      // Any splits that compare quicker than this time get the `PersonalBest`
+      // pace.
       uint32 split_pb = 1;     // Personal best for this split.
       Aggregate in_pb_run = 2; // Comparison for this split in the personal-best run.
     }
 
     // Pre-computed run-wide totals.
     //
-    // These can be optional, as there is a distinction between a zero time (very unlikely but theoretically possible)
+    // These can be optional, as there is a distinction between a zero time
+    // (very unlikely but theoretically possible)
     // and a nonexistent time (eg, comparison data is empty).
     message Run {
       optional uint32 total_in_pb_run = 1; // Precomputed total across all splits in the PB run.
@@ -132,7 +136,6 @@ message DumpResponse {
     Pace pace = 2;           // Computed pace for the split.
   }
 
-
   Attempt attempt = 1;              // The attempt state.
   Comparison comparison = 2;        // The most recent comparison.
   map<string, SplitNote> notes = 3; // The most recently pre-computed split notes.
@@ -140,9 +143,9 @@ message DumpResponse {
   optional uint32 total = 5;        // The most recently pre-computed total time.
 }
 
-//
-// Observe
-//
+/*
+ * Observe
+ */
 
 message ObserveRequest {
   // This might contain a mask eventually.
@@ -157,10 +160,10 @@ message Event {
       // Enumeration of types of time event.
       enum Type {
         PUSHED = 0;                // This time was just added to the split.
-        ATTEMPT_TOTAL = 2;         // This is the new attempt total for the split.
-        COMPARISON_TOTAL = 3;      // This is the new comparison total for the split.
-        ATTEMPT_CUMULATIVE = 4;    // This is the new attempt total for the split.
-        COMPARISON_CUMULATIVE = 5; // This is the new comparison total for the split.
+        ATTEMPT_TOTAL = 1;         // This is the new attempt total for the split.
+        COMPARISON_TOTAL = 2;      // This is the new comparison total for the split.
+        ATTEMPT_CUMULATIVE = 3;    // This is the new attempt cumulative for the split.
+        COMPARISON_CUMULATIVE = 4; // This is the new comparison cumulative for the split.
       }
       Type type = 1;   // The type of time event.
       uint32 time = 2; // The time, in milliseconds.
@@ -200,9 +203,9 @@ message Event {
   }
 }
 
-//
-// NewAttempt
-//
+/*
+ * NewAttempt
+ */
 
 // A new-attempt request.
 // This may accept filters later on.
@@ -215,9 +218,9 @@ message NewAttemptResponse {
   // Space for rent
 }
 
-//
-// Push
-//
+/*
+ * Push
+ */
 
 // A request to push a new time onto a particular split.
 message PushRequest {
@@ -230,9 +233,9 @@ message PushResponse {
   // Space for rent
 }
 
-//
-// Pop
-//
+/*
+ * Pop
+ */
 
 // A request to pop times from a particular split.
 message PopRequest {
@@ -245,15 +248,15 @@ message PopResponse {
   // Space for rent
 }
 
-//
-// Shared
-//
+/*
+ * Shared
+ */
 
 // Attempt information.
 //
 // This is both sent in dumps as well as whenever a new attempt begins.
 message AttemptInfo {
-  uint64 total = 1; // How many attempts have been run so far (ie. one below the current run's number).
+  uint64 total = 1;     // How many attempts have been run so far (ie. one below the current run's number).
   uint64 completed = 2; // How many attempts have been run to completion so far.
 }
 
