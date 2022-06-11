@@ -144,6 +144,9 @@ message DumpResponse {
   }
 
   // Pre-computed split attempt notes.
+  //
+  // Generally, these form server-side-cached equivalents to the split events
+  // mentioned as part of the `Event::Split` message.
   message SplitNote {
     Aggregate aggregate = 1; // Computed aggregate for the split.
     Pace pace = 2;           // Computed pace for the split.
@@ -186,9 +189,9 @@ message Event {
 
     // Payload of the event.
     oneof payload {
-      Time time = 2;  // A new split time has been logged.
-      Pace pace = 3;  // The split has been re-paced.
-      Pop pop = 4;    // The split has been popped.
+      Time time = 2;   // A new split time has been logged.
+      Delta delta = 3; // The split's delta against its comparison has changed.
+      Pop pop = 4;     // The split has been popped.
     }
   }
 
@@ -204,7 +207,7 @@ message Event {
     // Information about what `value` means.
     oneof type {
       ComparisonType comparison = 2; // This is a comparison total.
-      Pace attempt = 3;              // This is an attempt total with the given pace.
+      Delta attempt = 3;             // This is an attempt total; attached is its delta from the comparison total.
     }
   }
 
@@ -291,6 +294,12 @@ enum Pace {
   AHEAD_BUT_LOSING = 3;   // Ahead of comparison but losing time.
   AHEAD = 4;              // Ahead of comparison.
   PERSONAL_BEST = 5;      // A new personal best (implicitly ahead).
+}
+
+// A delta between attempt and comparison times, as a (pace, time) pair.
+message Delta {
+  Pace pace = 1;        // The pace giving the relationship between the two original times.
+  uint32 abs_delta = 2; // Absolute delta between times.
 }
 
 // Types of pop modification.
