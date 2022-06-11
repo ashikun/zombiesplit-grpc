@@ -152,11 +152,16 @@ message DumpResponse {
     Pace pace = 2;           // Computed pace for the split.
   }
 
+  // Run total, if one is available.
+  message Total {
+    uint32 time = 1;    // The attempt total.
+    RunDelta delta = 2; // Delta against the comparison delta at the same point.
+  }
+
   Attempt attempt = 1;              // The attempt state.
   Comparison comparison = 2;        // The most recent comparison.
   map<string, SplitNote> notes = 3; // The most recently pre-computed split notes.
-  RunDelta delta = 4;               // The most recently pre-computed total delta.
-  optional uint32 total = 5;        // The most recently pre-computed total time.
+  optional Total total = 4;         // The most recently pre-computed run total.
 }
 
 /*
