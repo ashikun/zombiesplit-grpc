@@ -149,7 +149,7 @@ message DumpResponse {
   // mentioned as part of the `Event::Split` message.
   message SplitNote {
     Aggregate aggregate = 1; // Computed aggregate for the split.
-    Pace pace = 2;           // Computed pace for the split.
+    SplitDelta delta = 2;    // Computed delta for the split.
   }
 
   // Run total, if one is available.
