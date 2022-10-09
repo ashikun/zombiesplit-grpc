@@ -109,7 +109,7 @@ message DumpResponse {
       string sid = 1;               // Short identifier for the split.
       string name = 2;              // Full formal name for the split.
       optional string nickname = 3; // Nickname for the split, if different from `name`.
-      repeated uint32 times = 4;    // Times for the split.
+      repeated Time times = 4;      // Times for the split.
     }
 
     GameCategory game_category = 1; // Game/category information.
@@ -125,7 +125,7 @@ message DumpResponse {
       //
       // Any splits that compare quicker than this time get the `PersonalBest`
       // pace.
-      uint32 split_pb = 1;     // Personal best for this split.
+      Time split_pb = 1;       // Personal best for this split.
       Aggregate in_pb_run = 2; // Comparison for this split in the personal-best run.
     }
 
@@ -135,8 +135,8 @@ message DumpResponse {
     // (very unlikely but theoretically possible)
     // and a nonexistent time (eg, comparison data is empty).
     message Run {
-      optional uint32 total_in_pb_run = 1; // Precomputed total across all splits in the PB run.
-      optional uint32 sum_of_best = 2;     // Precomputed sum of all split PBs.
+      optional Time total_in_pb_run = 1; // Precomputed total across all splits in the PB run.
+      optional Time sum_of_best = 2;     // Precomputed sum of all split PBs.
     }
 
     map<string, Split> splits = 1; // Per-split comparisons.
@@ -154,7 +154,7 @@ message DumpResponse {
 
   // Run total, if one is available.
   message Total {
-    uint32 time = 1;    // The attempt total.
+    Time time = 1;      // The attempt total.
     RunDelta delta = 2; // Delta against the comparison delta at the same point.
   }
 
@@ -186,8 +186,8 @@ message Event {
         ATTEMPT_CUMULATIVE = 3;    // This is the new attempt cumulative for the split.
         COMPARISON_CUMULATIVE = 4; // This is the new comparison cumulative for the split.
       }
-      Type type = 1;   // The type of time event.
-      uint32 time = 2; // The time, in milliseconds.
+      Type type = 1; // The type of time event.
+      Time time = 2; // The time.
     }
 
     string sid = 1; // Short ID of the split.
@@ -208,7 +208,7 @@ message Event {
       SUM_OF_BEST = 1;     // Sum of best segment times in the comparison.
     }
 
-    optional uint32 value = 1; // The time, in milliseconds, if one is logged for this total.
+    optional Time value = 1; // The time, if one is logged for this total.
     // Information about what `value` means.
     oneof type {
       ComparisonType comparison = 2; // This is a comparison total.
@@ -246,7 +246,7 @@ message NewAttemptResponse {
 // A request to push a new time onto a particular split.
 message PushRequest {
   uint64 index = 1; // Index of the split.
-  uint32 time = 2;  // Time being pushed, in milliseconds.
+  Time time = 2;    // Time being pushed.
 }
 
 // Response from a PushRequest.
@@ -303,15 +303,15 @@ enum Pace {
 
 // A delta between attempt and comparison split times, as a (pace, time) pair.
 message SplitDelta {
-  Pace pace = 1;              // The pace giving the relationship between the two original time sets.
-  uint32 split_abs_delta = 2; // Absolute delta between split-level times.
-  uint32 run_abs_delta = 3;   // Absolute delta between run-level times.
+  Pace pace = 1;            // The pace giving the relationship between the two original time sets.
+  Time split_abs_delta = 2; // Absolute delta between split-level times.
+  Time run_abs_delta = 3;   // Absolute delta between run-level times.
 }
 
 // A delta between attempt and comparison run times, as a (pace, time) pair.
 message RunDelta {
-  Pace pace = 1;        // The pace giving the relationship between the two original times (NONE, BEHIND, or AHEAD).
-  uint32 abs_delta = 2; // Absolute delta between times.
+  Pace pace = 1;      // The pace giving the relationship between the two original times (NONE, BEHIND, or AHEAD).
+  Time abs_delta = 2; // Absolute delta between times.
 }
 
 // Types of pop modification.
@@ -322,6 +322,13 @@ enum Pop {
 
 // Split aggregate information message.
 message Aggregate {
-  uint32 split = 1;      // Timing for this split only.
-  uint32 cumulative = 2; // Precomputed cumulative timing.
+  Time split = 1;      // Timing for this split only.
+  Time cumulative = 2; // Precomputed cumulative timing.
+}
+
+// An individual time (technically, an instant/duration).
+//
+// Times are signed, both to allow for the expression of deltas and 'fix ups' to segments.
+message Time {
+  int32 millis = 1; // Milliseconds.
 }
