@@ -85,8 +85,8 @@ message DumpRequest {
 message DumpResponse {
   // Information about the current run attempt.
   message Attempt {
-    // Information about a game/category.
-    message GameCategory {
+    // Information about a target.
+    message Target {
       string game_sid = 1;      // Short identifier for the game.
       string category_sid = 2;  // Short identifier for the category.
       string game_name = 3;     // Full name for the game.
@@ -95,7 +95,7 @@ message DumpResponse {
 
     // Information about a split in a run attempt.
     //
-    // Part of this is metadata about the split from the database - its
+    // Part of this is metadata about the segment from the database - its
     // identifier, its 'formal' name (eg, how one would refer to it in splits.io
     // and ILs), and its nickname (a separate name added to the split for
     // comedic or cathartic purposes).  For instance, we might have:
@@ -106,27 +106,23 @@ message DumpResponse {
     //
     // The other part of the Split is the times for the current attempt.
     message Split {
-      string sid = 1;               // Short identifier for the split.
-      string name = 2;              // Full formal name for the split.
-      optional string nickname = 3; // Nickname for the split, if different from `name`.
-      repeated Time times = 4;      // Times for the split.
+      string sid = 1;               // Short identifier for the segment.
+      string name = 2;              // Full formal name for the segment.
+      optional string nickname = 3; // Nickname for the segment, if different from `name`.
+      repeated Time times = 4;    // Times for the split.
     }
 
-    GameCategory game_category = 1; // Game/category information.
-    AttemptInfo attempt_info = 2;   // Current attempt information.
-    repeated Split splits = 3;      // Information about a split.
+    Target target = 1;            // Target information.
+    AttemptInfo attempt_info = 2; // Current attempt information.
+    repeated Split splits = 3;    // Information about a split.
   }
 
   // Information about the most recent comparison data.
   message Comparison {
-    // Split comparison message.
-    message Split {
-      // The personal best for this split, if any.
-      //
-      // Any splits that compare quicker than this time get the `PersonalBest`
-      // pace.
-      Time split_pb = 1;       // Personal best for this split.
-      Aggregate in_pb_run = 2; // Comparison for this split in the personal-best run.
+    // Segment comparison message.
+    message Segment {
+      Time split_pb = 1;      // Personal best for this segment.
+      Aggregate in_pb_run = 2; // Comparison for this segment in the personal-best run.
     }
 
     // Pre-computed run-wide totals.
@@ -139,8 +135,8 @@ message DumpResponse {
       optional Time sum_of_best = 2;     // Precomputed sum of all split PBs.
     }
 
-    map<string, Split> splits = 1; // Per-split comparisons.
-    Run run = 2;                   // Pre-computed run-wide totals.
+    map<string, Segment> segments = 1; // Per-segment comparisons.
+    Run run = 2;                       // Pre-computed run-wide totals.
   }
 
   // Pre-computed split attempt notes.
@@ -150,6 +146,7 @@ message DumpResponse {
   message SplitNote {
     Aggregate aggregate = 1; // Computed aggregate for the split.
     SplitDelta delta = 2;    // Computed delta for the split.
+    Pace pace = 3;           // Computed pace for the split.
   }
 
   // Run total, if one is available.
@@ -190,13 +187,14 @@ message Event {
       Time time = 2; // The time.
     }
 
-    string sid = 1; // Short ID of the split.
+    string sid = 1; // Short ID of the split's segment.
 
     // Payload of the event.
     oneof payload {
       Time time = 2;        // A new split time has been logged.
       SplitDelta delta = 3; // The split's delta against its comparison has changed.
       Pop pop = 4;          // The split has been popped.
+      Pace pace = 5;        // The split has changed pace (pre-computed from the most recent delta).
     }
   }
 
@@ -221,6 +219,7 @@ message Event {
     AttemptInfo reset = 1; // A new attempt has started; the new attempt's information follows.
     Split split = 2;       // An event on a split.
     Total total = 3;       // A whole-run total time announcement.
+    Pace overallPace = 4;  // A whole-run pace note (pre-calculated from the most recent attempt delta).
   }
 }
 
@@ -288,10 +287,7 @@ message AttemptInfo {
 //
 // For splits, all of the values of Pace are relevant.
 //
-// For totals, the only relevant values are NONE, BEHIND, AHEAD, and
-// PERSONAL_BEST.
-//
-// Future versions of the protocol may split PERSONAL_BEST out of this enum.
+// For totals, the only relevant values are NONE, BEHIND, and AHEAD.
 enum Pace {
   NONE = 0;               // Pacing information not available.
   BEHIND = 1;             // Behind comparison.
@@ -301,17 +297,15 @@ enum Pace {
   PERSONAL_BEST = 5;      // A new personal best (implicitly ahead).
 }
 
-// A delta between attempt and comparison split times, as a (pace, time) pair.
+// Delta information for a split.
 message SplitDelta {
-  Pace pace = 1;            // The pace giving the relationship between the two original time sets.
-  Time split_abs_delta = 2; // Absolute delta between split-level times.
-  Time run_abs_delta = 3;   // Absolute delta between run-level times.
+  Time split = 1; // Delta (attempt - comparison) between split-level times.
+  Time run = 2;   // Delta (attempt - comparison) between run-level times.
 }
 
-// A delta between attempt and comparison run times, as a (pace, time) pair.
+// A delta between attempt and comparison run times.
 message RunDelta {
-  Pace pace = 1;      // The pace giving the relationship between the two original times (NONE, BEHIND, or AHEAD).
-  Time abs_delta = 2; // Absolute delta between times.
+  Time value = 1; // Delta (attempt - comparison).
 }
 
 // Types of pop modification.
