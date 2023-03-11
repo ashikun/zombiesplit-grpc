@@ -174,7 +174,9 @@ message Event {
   // An event on a split.
   message Split {
     // An event on a split time.
-    message Time {
+    //
+    // This cannot be called Time as it would then clash with Time.
+    message SplitTime {
       // Enumeration of types of time event.
       enum Type {
         PUSHED = 0;                // This time was just added to the split.
@@ -191,7 +193,7 @@ message Event {
 
     // Payload of the event.
     oneof payload {
-      Time time = 2;        // A new split time has been logged.
+      SplitTime time = 2;   // A new split time has been logged.
       SplitDelta delta = 3; // The split's delta against its comparison has changed.
       Pop pop = 4;          // The split has been popped.
       Pace pace = 5;        // The split has changed pace (pre-computed from the most recent delta).
